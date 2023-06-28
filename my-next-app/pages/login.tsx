@@ -59,7 +59,7 @@ const LoginPage: NextPage = () => {
 
     useEffect(() => {
         if (webcamRef.current) {
-            const interval = setInterval(checkFaceDetection, 500);
+            const interval = setInterval(checkFaceDetection, 100);
             return () => clearInterval(interval);
         }
     }, [webcamRef]);
