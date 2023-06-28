@@ -12,6 +12,7 @@ const LoginPage: NextPage = () => {
     const [videoDimensions, setVideoDimensions] = useState({ width: 0, height: 0 });
     const webcamRef = useRef<Webcam>(null);
     const [faceLocation, setFaceLocation] = useState({ x: 0, y: 0, width: 0, height: 0 });
+    const [capturedImage, setCapturedImage] = useState('');
     const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setUsername(e.target.value);
     };
@@ -52,6 +53,27 @@ const LoginPage: NextPage = () => {
         }
     };
 
+    const captureImage = () => {
+        const videoElement = webcamRef.current?.video as HTMLVideoElement;
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        const context = canvas.getContext('2d');
+        context?.drawImage(videoElement, 0, 0, videoElement.videoWidth, videoElement.videoHeight);
+
+        if (isFaceDetected) {
+            const { x, y, width, height } = faceLocation;
+            const faceCanvas = document.createElement('canvas');
+            faceCanvas.width = width;
+            faceCanvas.height = height;
+            const faceContext = faceCanvas.getContext('2d');
+            faceContext?.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+            setCapturedImage(faceCanvas.toDataURL());
+        } else {
+            setCapturedImage(canvas.toDataURL());
+        }
+    };
+
 
     useEffect(() => {
         loadFaceDetectionModels();
@@ -82,6 +104,14 @@ const LoginPage: NextPage = () => {
             <button onClick={handleLogin} className={styles.button}>
                 Login
             </button>
+            <button className={styles.captureButton} onClick={captureImage}>
+                Capture
+            </button>
+            {capturedImage && (
+                <div className={styles.capturedImageContainer}>
+                    <img className={styles.capturedImage} src={capturedImage} alt="Captured" />
+                </div>
+            )}
             <div className={styles.faceInfo}>
                 {isFaceDetected ? (
                     <>
@@ -94,6 +124,7 @@ const LoginPage: NextPage = () => {
                 ) : (
                     <p>No face detected</p>
                 )}
+
             </div>
         </div>
     );
